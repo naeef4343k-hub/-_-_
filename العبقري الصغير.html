@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مغامرة الماهر في رياضيات عمان - الصف الثالث</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo & Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        oman: {
+                            red: '#D62828',
+                            green: '#007A3D',
+                            gold: '#F4A261',
+                            sand: '#E9C46A',
+                            dark: '#1D3557',
+                            teal: '#2A9D8F'
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        tajawal: ['Tajawal', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        .bg-pattern {
+            background-color: #1e293b;
+            background-image: radial-gradient(#334155 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .oman-gradient {
+            background: linear-gradient(135deg, #007A3D 0%, #2A9D8F 50%, #D62828 100%);
+        }
+
+        .gold-glow {
+            box-shadow: 0 0 25px rgba(244, 162, 97, 0.5);
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+        }
+
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.03); }
+        }
+
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s infinite ease-in-out;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-pattern flex flex-col justify-between min-h-screen text-slate-100">
+
+    <!-- Header Controls & Status -->
+    <header class="w-full bg-slate-900/90 border-b border-slate-800 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="showScreen('map')">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-oman-green via-oman-teal to-oman-gold flex items-center justify-center shadow-lg border border-white/20">
+                    <i class="fa-solid font-bold text-xl text-white fa-compass"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-amber-100 to-emerald-300">
+                        مغامرة الرياضيات في سلطنة عمان
+                    </h1>
+                    <p class="text-xs text-slate-400 font-semibold">الصف الثالث الابتدائي - منهج سلطنة عمان</p>
+                </div>
+            </div>
+
+            <!-- Player Status Indicators -->
+            <div id="player-stats-bar" class="hidden flex items-center gap-3">
+                <!-- Stars Counter -->
+                <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-amber-500/30">
+                    <i class="fa-solid fa-star text-amber-400 text-lg animate-bounce"></i>
+                    <span id="stat-stars" class="font-extrabold text-amber-300 text-lg">0</span>
+                </div>
+
+                <!-- Omani Coins Counter -->
+                <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-emerald-500/30">
+                    <i class="fa-solid fa-coins text-emerald-400 text-lg"></i>
+                    <span id="stat-baisa" class="font-extrabold text-emerald-300 text-lg">0 بيسة</span>
+                </div>
+
+                <!-- Sound Toggle -->
+                <button onclick="toggleAudio()" id="sound-btn" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-amber-400 transition">
+                    <i class="fa-solid fa-volume-high text-lg"></i>
+                </button>
+
+                <!-- Reset Progress -->
+                <button onclick="confirmReset()" title="إعادة التشغيل" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-rose-950/50 border border-slate-700 hover:border-rose-800 flex items-center justify-center text-rose-400 transition">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center items-center">
+
+        <!-- ================= SCREEN 1: WELCOME & CHARACTER SELECTION ================= -->
+        <section id="screen-welcome" class="w-full max-w-2xl text-center space-y-6">
+            <div class="glass-card rounded-3xl p-6 md:p-10 border border-amber-500/20 shadow-2xl relative overflow-hidden">
+                <!-- Decorative Omani Khanjar / Castle Pattern Overlay -->
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-oman-green/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-oman-red/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="inline-block px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm font-bold mb-3">
+                    <i class="fa-solid fa-graduation-cap ml-2"></i>منهج وزارة التربية والتعليم - سلطنة عمان
+                </div>
+
+                <h2 class="text-3xl md:text-5xl font-black text-white leading-tight">
+                    أهلاً بك يا بطل <span class="text-amber-400">الرياضيات!</span>
+                </h2>
+                <p class="text-slate-300 text-base md:text-lg max-w-lg mx-auto">
+                    انطلق في رحلة مشوقة عبر سلطنة عمان، اجمع اللبان العماني والكنوز من خلال حل التحديات الرياضية الممتعة!
+                </p>
+
+                <!-- Character Selection -->
+                <div class="mt-8 space-y-4">
+                    <h3 class="text-md font-bold text-amber-200">اختر شخصيتك للمغامرة:</h3>
+                    <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                        <!-- Character 1: Ahmed -->
+                        <div id="char-ahmed" onclick="selectCharacter('أحمد', 'boy')" class="p-4 rounded-2xl bg-slate-800/80 border-2 border-amber-500/40 hover:border-amber-400 cursor-pointer transition transform hover:scale-105 text-center group active-char">
+                            <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-1 mb-2 shadow-lg">
+                                <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-3xl">
+                                    🇴🇲 👦🏻
+                                </div>
+                            </div>
+                            <span class="font-extrabold text-white text-lg block group-hover:text-amber-300">أحمد</span>
+                            <span class="text-xs text-slate-400">مكتشف قلعة نزوى</span>
+                        </div>
+
+                        <!-- Character 2: Mariam -->
+                        <div id="char-mariam" onclick="selectCharacter('مريم', 'girl')" class="p-4 rounded-2xl bg-slate-800/80 border-2 border-slate-700 hover:border-amber-400 cursor-pointer transition transform hover:scale-105 text-center group">
+                            <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 p-1 mb-2 shadow-lg">
+                                <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-3xl">
+                                    🇴🇲 👧🏻
+                                </div>
+                            </div>
+                            <span class="font-extrabold text-white text-lg block group-hover:text-emerald-300">مريم</span>
+                            <span class="text-xs text-slate-400">بطلة حساب البيسات</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Player Name -->
+                <div class="mt-6 max-w-md mx-auto">
+                    <label for="player-name-input" class="block text-right text-xs text-slate-300 font-bold mb-2 pr-1">اكتب اسمك الكريم:</label>
+                    <input type="text" id="player-name-input" value="البطل الصغير" placeholder="أدخل اسمك هنا..." class="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-slate-700 text-white text-center font-bold text-lg focus:outline-none focus:border-amber-400 shadow-inner">
+                </div>
+
+                <!-- Start Button -->
+                <div class="mt-8">
+                    <button onclick="startJourney()" class="w-full max-w-md py-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-500 text-white font-black text-xl shadow-xl hover:shadow-emerald-500/30 transform hover:-translate-y-1 transition duration-200">
+                        ابدأ المغامرة الآن <i class="fa-solid fa-arrow-left mr-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SCREEN 2: INTERACTIVE OMAN MAP ================= -->
+        <section id="screen-map" class="hidden w-full space-y-6">
+            <!-- Welcome Banner -->
+            <div class="glass-card rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-700">
+                <div class="flex items-center gap-4">
+                    <div id="player-avatar-badge" class="w-14 h-14 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-3xl shadow-inner">
+                        👦🏻
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white">مرحباً بك يا <span id="display-player-name" class="text-amber-300">أحمد</span>!</h2>
+                        <p class="text-sm text-slate-300">اختر المحطة أو المعلم العماني لتبدأ التحدي الممتع:</p>
+                    </div>
+                </div>
+                
+                <!-- Quick Mode Button -->
+                <button onclick="startSpeedChallenge()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 text-white font-extrabold text-sm hover:scale-105 transition shadow-lg flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-lg animate-pulse"></i>
+                    تحدي السرعة (60 ثانية)
+                </button>
+            </div>
+
+            <!-- Stage Cards Grid (Map Stages) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+                <!-- Stage 1: Nizwa Fort (Place Value & Numbers) -->
+                <div onclick="openStage(1)" class="glass-card rounded-2xl p-5 border border-amber-500/30 card-hover cursor-pointer relative overflow-hidden group">
+                    <div class="flex items-start justify-between">
+                        <span class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center text-amber-300 font-black text-lg">1</span>
+                        <span class="badge-stage-1 bg-amber-500/20 text-amber-300 text-xs px-2.5 py-1 rounded-full border border-amber-500/30 font-bold">جاهز</span>
+                    </div>
+                    <div class="my-4 text-center">
+                        <div class="text-5xl mb-2 group-hover:scale-110 transition duration-300">🏰</div>
+                        <h3 class="text-xl font-extrabold text-amber-200">قلعة نزوى التاريخية</h3>
+                        <p class="text-xs text-slate-300 mt-1">القيمة المكانية والأعداد حتى 1000</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t border-slate-700/60 text-xs">
+                        <span class="text-slate-400"><i class="fa-solid fa-star text-amber-400 ml-1"></i> مكافأة: 50 بيسة</span>
+                        <span class="text-emerald-400 font-bold">ابدأ المحطة <i class="fa-solid fa-angle-left"></i></span>
+                    </div>
+                </div>
+
+                <!-- Stage 2: Matrah Port (Multiplication & Division) -->
+                <div onclick="openStage(2)" class="glass-card rounded-2xl p-5 border border-emerald-500/30 card-hover cursor-pointer relative overflow-hidden group">
+                    <div class="flex items-start justify-between">
+                        <span class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-300 font-black text-lg">2</span>
+                        <span class="badge-stage-2 bg-emerald-500/20 text-emerald-300 text-xs px-2.5 py-1 rounded-full border border-emerald-500/30 font-bold">جاهز</span>
+                    </div>
+                    <div class="my-4 text-center">
+                        <div class="text-5xl mb-2 group-hover:scale-110 transition duration-300">⛵</div>
+                        <h3 class="text-xl font-extrabold text-emerald-200">ميناء مطرح للسفن</h3>
+                        <p class="text-xs text-slate-300 mt-1">جدول الضرب والقسمة البسيطة (2, 3, 4, 5, 10)</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t border-slate-700/60 text-xs">
+                        <span class="text-slate-400"><i class="fa-solid fa-star text-amber-400 ml-1"></i> مكافأة: 100 بيسة</span>
+                        <span class="text-emerald-400 font-bold">ابدأ المحطة <i class="fa-solid fa-angle-left"></i></span>
+                    </div>
+                </div>
+
+                <!-- Stage 3: Omani Souq (Money - Rial & Baisa) -->
+                <div onclick="openStage(3)" class="glass-card rounded-2xl p-5 border border-rose-500/30 card-hover cursor-pointer relative overflow-hidden group">
+                    <div class="flex items-start justify-between">
+                        <span class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-400 flex items-center justify-center text-rose-300 font-black text-lg">3</span>
+                        <span class="badge-stage-3 bg-rose-500/20 text-rose-300 text-xs px-2.5 py-1 rounded-full border border-rose-500/30 font-bold">جاهز</span>
+                    </div>
+                    <div class="my-4 text-center">
+                        <div class="text-5xl mb-2 group-hover:scale-110 transition duration-300">🏪</div>
+                        <h3 class="text-xl font-extrabold text-rose-200">دكان السوق العماني</h3>
+                        <p class="text-xs text-slate-300 mt-1">العملة العمانية: حساب الريال والبيسة</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t border-slate-700/60 text-xs">
+                        <span class="text-slate-400"><i class="fa-solid fa-coins text-amber-400 ml-1"></i> متجر تفاعلي</span>
+                        <span class="text-rose-400 font-bold">ابدأ المحطة <i class="fa-solid fa-angle-left"></i></span>
+                    </div>
+                </div>
+
+                <!-- Stage 4: Sahwa Clock Tower (Time Reading) -->
+                <div onclick="openStage(4)" class="glass-card rounded-2xl p-5 border border-teal-500/30 card-hover cursor-pointer relative overflow-hidden group">
+                    <div class="flex items-start justify-between">
+                        <span class="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400 flex items-center justify-center text-teal-300 font-black text-lg">4</span>
+                        <span class="badge-stage-4 bg-teal-500/20 text-teal-300 text-xs px-2.5 py-1 rounded-full border border-teal-500/30 font-bold">جاهز</span>
+                    </div>
+                    <div class="my-4 text-center">
+                        <div class="text-5xl mb-2 group-hover:scale-110 transition duration-300">🕰️</div>
+                        <h3 class="text-xl font-extrabold text-teal-200">برج الصحوة والساعة</h3>
+                        <p class="text-xs text-slate-300 mt-1">قراءة الساعة العادية والدقيقة بالوقت</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t border-slate-700/60 text-xs">
+                        <span class="text-slate-400"><i class="fa-solid fa-star text-amber-400 ml-1"></i> مكافأة: 50 بيسة</span>
+                        <span class="text-teal-400 font-bold">ابدأ المحطة <i class="fa-solid fa-angle-left"></i></span>
+                    </div>
+                </div>
+
+                <!-- Stage 5: Bahla Oasis (Geometry Shapes & Fractions) -->
+                <div onclick="openStage(5)" class="glass-card rounded-2xl p-5 border border-purple-500/30 card-hover cursor-pointer relative overflow-hidden group">
+                    <div class="flex items-start justify-between">
+                        <span class="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-400 flex items-center justify-center text-purple-300 font-black text-lg">5</span>
+                        <span class="badge-stage-5 bg-purple-500/20 text-purple-300 text-xs px-2.5 py-1 rounded-full border border-purple-500/30 font-bold">جاهز</span>
+                    </div>
+                    <div class="my-4 text-center">
+                        <div class="text-5xl mb-2 group-hover:scale-110 transition duration-300">🔷</div>
+                        <h3 class="text-xl font-extrabold text-purple-200">واحة بهلاء الهندسية</h3>
+                        <p class="text-xs text-slate-300 mt-1">الأشكال الهندسية والكسور البسيطة</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t border-slate-700/60 text-xs">
+                        <span class="text-slate-400"><i class="fa-solid fa-star text-amber-400 ml-1"></i> مكافأة: 100 بيسة</span>
+                        <span class="text-purple-400 font-bold">ابدأ المحطة <i class="fa-solid fa-angle-left"></i></span>
+                    </div>
+                </div>
+
+                <!-- Stage Certificate / Grand Honor -->
+                <div onclick="showCertificate()" class="glass-card rounded-2xl p-5 border border-amber-400/50 card-hover cursor-pointer relative overflow-hidden group bg-gradient-to-br from-amber-950/40 via-slate-800 to-slate-900">
+                    <div class="flex items-start justify-between">
+                        <span class="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400 flex items-center justify-center text-amber-300 font-black text-lg">🎓</span>
+                        <span class="bg-amber-400/20 text-amber-300 text-xs px-2.5 py-1 rounded-full border border-amber-400/30 font-bold">شهادة التفوق</span>
+                    </div>
+                    <div class="my-4 text-center">
+                        <div class="text-5xl mb-2 group-hover:scale-110 transition duration-300">🏆</div>
+                        <h3 class="text-xl font-extrabold text-amber-300">شهادة وسام الماهر</h3>
+                        <p class="text-xs text-slate-300 mt-1">اطبع شهادة تفوقك باسمك ورصيد نجومك</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t border-slate-700/60 text-xs">
+                        <span class="text-amber-300 font-bold">عرض وتنزيل الشهادة</span>
+                        <span class="text-amber-300 font-bold"><i class="fa-solid fa-award"></i></span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= SCREEN 3: GAME PLAY ARENA ================= -->
+        <section id="screen-gameplay" class="hidden w-full max-w-3xl">
+            <div class="glass-card rounded-3xl p-6 md:p-8 border border-slate-700 shadow-2xl relative">
+                
+                <!-- Game Header -->
+                <div class="flex items-center justify-between border-b border-slate-700/80 pb-4 mb-6">
+                    <button onclick="showScreen('map')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm flex items-center gap-2 border border-slate-700">
+                        <i class="fa-solid fa-arrow-right"></i> الخريطة
+                    </button>
+
+                    <div class="text-center">
+                        <h3 id="game-stage-title" class="text-lg md:text-xl font-black text-amber-300">عنوان المحطة</h3>
+                        <p id="game-progress-text" class="text-xs text-slate-400 font-bold">السؤال 1 من 5</p>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 text-amber-400 font-black">
+                        <i class="fa-solid fa-star"></i>
+                        <span id="game-current-stars">0</span>
+                    </div>
+                </div>
+
+                <!-- Question Visual Canvas Container / Diagram -->
+                <div id="question-visual-box" class="w-full bg-slate-900/90 rounded-2xl p-6 border border-slate-800 text-center mb-6 min-h-[160px] flex flex-col items-center justify-center relative overflow-hidden">
+                    <!-- Dynamic SVG / Graphic Visual will be rendered here -->
+                </div>
+
+                <!-- Question Prompt Text -->
+                <div class="text-center mb-8">
+                    <h2 id="question-prompt" class="text-xl md:text-2xl font-black text-white leading-relaxed">
+                        جاري تحميل السؤال...
+                    </h2>
+                </div>
+
+                <!-- Answer Choices Grid -->
+                <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Dynamic option buttons inserted via JS -->
+                </div>
+
+                <!-- Feedback Banner -->
+                <div id="feedback-banner" class="hidden mt-6 p-4 rounded-2xl text-center font-black text-lg animate-bounce transition">
+                    <!-- Correct/Incorrect message -->
+                </div>
+
+                <!-- Action Button for Next Question -->
+                <div class="mt-6 flex justify-end">
+                    <button id="next-btn" onclick="nextQuestion()" class="hidden px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-lg shadow-lg hover:scale-105 transition">
+                        السؤال التالي <i class="fa-solid fa-arrow-left ml-2"></i>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= SCREEN 4: OMANI SOUQ INTERACTIVE SHOP ================= -->
+        <section id="screen-souq" class="hidden w-full max-w-4xl">
+            <div class="glass-card rounded-3xl p-6 md:p-8 border border-rose-500/30 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-4 mb-6">
+                    <button onclick="showScreen('map')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm flex items-center gap-2 border border-slate-700">
+                        <i class="fa-solid fa-arrow-right"></i> الخريطة
+                    </button>
+
+                    <div class="text-center">
+                        <h3 class="text-xl font-black text-rose-300">🏪 دكان السوق العماني (حساب البيسات)</h3>
+                        <p class="text-xs text-slate-400 font-bold">1 ريال عماني = 1000 بيسة</p>
+                    </div>
+
+                    <div class="bg-emerald-900/40 border border-emerald-500/40 px-4 py-2 rounded-xl text-emerald-300 font-black text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-wallet"></i>
+                        محفظتك: <span id="souq-wallet-balance">0 بيسة</span>
+                    </div>
+                </div>
+
+                <div id="souq-task-banner" class="bg-slate-900/90 border border-amber-500/30 p-4 rounded-2xl text-center mb-6">
+                    <p id="souq-instruction" class="text-lg font-bold text-amber-200">
+                        اشترِ المنتجات العمانية واحسب المجموع المطلق بالبيسة!
+                    </p>
+                </div>
+
+                <!-- Items Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <!-- Item 1: Omani Halwa -->
+                    <div onclick="addSouqItem('حلوى عمانية', 500)" class="bg-slate-800/90 border border-slate-700 rounded-2xl p-4 text-center cursor-pointer hover:border-amber-400 transition transform hover:-translate-y-1">
+                        <div class="text-4xl mb-2">🏺</div>
+                        <h4 class="font-black text-white text-base">حلوى عمانية</h4>
+                        <p class="text-xs text-amber-400 font-extrabold mt-1">500 بيسة (نصف ريال)</p>
+                    </div>
+
+                    <!-- Item 2: Omani Khanjar -->
+                    <div onclick="addSouqItem('خنجر عماني فضي', 1000)" class="bg-slate-800/90 border border-slate-700 rounded-2xl p-4 text-center cursor-pointer hover:border-amber-400 transition transform hover:-translate-y-1">
+                        <div class="text-4xl mb-2">🗡️</div>
+                        <h4 class="font-black text-white text-base">خنجر عماني</h4>
+                        <p class="text-xs text-amber-400 font-extrabold mt-1">1000 بيسة (1 ريال)</p>
+                    </div>
+
+                    <!-- Item 3: Frankincense (Luban) -->
+                    <div onclick="addSouqItem('لبان حوجري فاخر', 200)" class="bg-slate-800/90 border border-slate-700 rounded-2xl p-4 text-center cursor-pointer hover:border-amber-400 transition transform hover:-translate-y-1">
+                        <div class="text-4xl mb-2">🧪</div>
+                        <h4 class="font-black text-white text-base">لبان ظفاري</h4>
+                        <p class="text-xs text-amber-400 font-extrabold mt-1">200 بيسة</p>
+                    </div>
+
+                    <!-- Item 4: Omani Pottery / Kummah -->
+                    <div onclick="addSouqItem('كمة عمانية ملونة', 300)" class="bg-slate-800/90 border border-slate-700 rounded-2xl p-4 text-center cursor-pointer hover:border-amber-400 transition transform hover:-translate-y-1">
+                        <div class="text-4xl mb-2">👳🏻‍♂️</div>
+                        <h4 class="font-black text-white text-base">كمة عمانية</h4>
+                        <p class="text-xs text-amber-400 font-extrabold mt-1">300 بيسة</p>
+                    </div>
+                </div>
+
+                <!-- Shopping Basket & Billing -->
+                <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800">
+                    <h4 class="font-bold text-slate-300 mb-3 flex items-center justify-between">
+                        <span><i class="fa-solid fa-basket-shopping text-amber-400 ml-2"></i> سلة المشتريات:</span>
+                        <button onclick="clearSouqCart()" class="text-xs text-rose-400 hover:underline">تفريغ السلة</button>
+                    </h4>
+
+                    <div id="souq-cart-items" class="min-h-[60px] flex flex-wrap gap-2 mb-4 p-2 bg-slate-950/50 rounded-xl border border-slate-800">
+                        <span class="text-slate-500 text-xs p-2">اضغط على العناصر أعلاه لإضافتها للسلة...</span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-slate-800">
+                        <div class="text-lg font-black text-white">
+                            المجموع الكلي: <span id="souq-cart-total" class="text-amber-300">0 بيسة</span>
+                        </div>
+
+                        <button onclick="checkSouqPayment()" class="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black hover:scale-105 transition shadow-lg">
+                            <i class="fa-solid fa-check-circle ml-2"></i> تأكيد الشراء والحساب
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SCREEN 5: SPEED CHALLENGE ================= -->
+        <section id="screen-speed" class="hidden w-full max-w-2xl">
+            <div class="glass-card rounded-3xl p-6 md:p-8 border border-amber-500/40 shadow-2xl text-center relative overflow-hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="showScreen('map')" class="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-sm">
+                        <i class="fa-solid fa-arrow-right"></i> الخريطة
+                    </button>
+                    <div class="flex items-center gap-2 bg-rose-500/20 border border-rose-500/40 px-4 py-1.5 rounded-full text-rose-300 font-black text-lg">
+                        <i class="fa-solid fa-stopwatch animate-spin"></i>
+                        الوقت: <span id="speed-timer">60</span> ثانية
+                    </div>
+                    <div class="text-emerald-400 font-black text-lg">
+                        النقاط: <span id="speed-score">0</span>
+                    </div>
+                </div>
+
+                <div class="my-8">
+                    <div id="speed-question" class="text-4xl md:text-5xl font-black text-amber-300 mb-8 tracking-wider">
+                        5 × 4 = ؟
+                    </div>
+
+                    <div id="speed-options" class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                        <!-- Dynamic Speed Buttons -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SCREEN 6: CERTIFICATE DISPLAY ================= -->
+        <section id="screen-certificate" class="hidden w-full max-w-3xl">
+            <div class="glass-card rounded-3xl p-6 md:p-8 border border-amber-400/50 shadow-2xl text-center">
+                
+                <!-- Printable Certificate Container -->
+                <div id="certificate-print-area" class="bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 text-slate-900 rounded-2xl p-8 border-8 border-amber-600 shadow-2xl relative overflow-hidden text-center my-4">
+                    
+                    <!-- Decorative Omani Border Elements -->
+                    <div class="absolute top-2 right-2 text-4xl text-amber-700/30">🇴🇲</div>
+                    <div class="absolute top-2 left-2 text-4xl text-amber-700/30">🇴🇲</div>
+                    <div class="absolute bottom-2 right-2 text-4xl text-amber-700/30">🏰</div>
+                    <div class="absolute bottom-2 left-2 text-4xl text-amber-700/30">🗡️</div>
+
+                    <div class="text-xs font-bold text-amber-900 tracking-widest uppercase mb-1">سلطنة عمان - وزارة التربية والتعليم</div>
+                    <div class="text-sm font-extrabold text-emerald-800 mb-4">وسام الماهر في مادة الرياضيات - الصف الثالث الابتدائي</div>
+
+                    <h2 class="text-3xl md:text-4xl font-black text-amber-900 my-2">🏆 شهادة تفوق وتقدير 🏆</h2>
+
+                    <p class="text-slate-700 font-bold text-base mt-4">تشهد المنصة التعليمية بأن الطالب/ـة البطل/ـة:</p>
+                    <div id="cert-student-name" class="text-3xl md:text-4xl font-black text-emerald-900 my-3 underline decoration-amber-500 decoration-wavy">
+                        أحمد البطل
+                    </div>
+
+                    <p class="text-slate-800 font-bold text-sm md:text-base max-w-lg mx-auto leading-relaxed">
+                        قد أتم بنجاح واقتدار كل محطات وتحديات الرياضيات في <span class="text-amber-900 font-black">مغامرة عمان التعليمية</span> وحصل على وسام التميز للذكاء الحسابي!
+                    </p>
+
+                    <div class="flex justify-center items-center gap-6 my-6 pt-4 border-t-2 border-amber-300">
+                        <div class="text-center">
+                            <span class="text-xs text-slate-600 font-bold block">مجموع النجوم:</span>
+                            <span id="cert-stars" class="text-2xl font-black text-amber-700">★ 25</span>
+                        </div>
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-500 to-emerald-600 flex items-center justify-center text-white text-2xl shadow-lg border-2 border-white">
+                            🎖️
+                        </div>
+                        <div class="text-center">
+                            <span class="text-xs text-slate-600 font-bold block">رصيد البيسات:</span>
+                            <span id="cert-baisa" class="text-2xl font-black text-emerald-800">500 بيسة</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-end text-xs font-bold text-slate-600 mt-6 px-4">
+                        <div>التاريخ: <span id="cert-date">2026/10/07</span></div>
+                        <div>ختم الاعتماد: 🌟 ماهر الرياضيات</div>
+                    </div>
+                </div>
+
+                <!-- Print & Action Buttons -->
+                <div class="flex flex-wrap items-center justify-center gap-4 mt-6">
+                    <button onclick="window.print()" class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-base shadow-lg transition flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> طباعة الشهادة
+                    </button>
+                    <button onclick="showScreen('map')" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-base border border-slate-700">
+                        العودة للخريطة
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Bar -->
+    <footer class="w-full bg-slate-950/80 border-t border-slate-800 py-3 text-center text-xs text-slate-400">
+        <p>مصمم خصيصاً لطلاب الصف الثالث الابتدائي بالسلطنة 🇴🇲 | مادة الرياضيات التفاعلية</p>
+    </footer>
+
+    <script>
+        // Game Data & Player State
+        let gameState = {
+            playerName: "البطل الصغير",
+            character: "ahmed",
+            stars: 0,
+            baisa: 0,
+            completedStages: [],
+            soundEnabled: true
+        };
+
+        let currentStageId = 1;
+        let currentQuestionIndex = 0;
+        let stageQuestions = [];
+        let speedTimerInterval = null;
+        let speedTimeLeft = 60;
+        let speedScore = 0;
+
+        // Web Audio Synthesizer for zero-dependency sound effects
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!gameState.soundEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(180, now + 0.15);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'coin') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(987.77, now); // B5
+                    osc.frequency.exponentialRampToValueAtTime(1318.51, now + 0.1); // E6
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                }
+            } catch(e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        function toggleAudio() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            btn.innerHTML = gameState.soundEnabled ? '<i class="fa-solid fa-volume-high text-lg"></i>' : '<i class="fa-solid fa-volume-xmark text-lg text-slate-500"></i>';
+        }
+
+        function showScreen(screenId) {
+            playSound('click');
+            const screens = ['welcome', 'map', 'gameplay', 'souq', 'speed', 'certificate'];
+            screens.forEach(s => {
+                document.getElementById(`screen-${s}`).classList.add('hidden');
+            });
+            document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+
+            const statsBar = document.getElementById('player-stats-bar');
+            if (screenId !== 'welcome') {
+                statsBar.classList.remove('hidden');
+                updateStatsUI();
+            } else {
+                statsBar.classList.add('hidden');
+            }
+        }
+
+        function selectCharacter(name, type) {
+            playSound('click');
+            gameState.character = type;
+            document.getElementById('char-ahmed').classList.toggle('border-amber-500/40', type !== 'boy');
+            document.getElementById('char-ahmed').classList.toggle('border-amber-400', type === 'boy');
+            document.getElementById('char-mariam').classList.toggle('border-slate-700', type !== 'girl');
+            document.getElementById('char-mariam').classList.toggle('border-amber-400', type === 'girl');
+        }
+
+        function startJourney() {
+            const inputName = document.getElementById('player-name-input').value.trim();
+            gameState.playerName = inputName || "البطل الصغير";
+            document.getElementById('display-player-name').innerText = gameState.playerName;
+            document.getElementById('player-avatar-badge').innerText = gameState.character === 'boy' ? '👦🏻' : '👧🏻';
+            saveProgress();
+            showScreen('map');
+        }
+
+        function updateStatsUI() {
+            document.getElementById('stat-stars').innerText = gameState.stars;
+            document.getElementById('stat-baisa').innerText = `${gameState.baisa} بيسة`;
+            document.getElementById('game-current-stars').innerText = gameState.stars;
+        }
+
+        // Questions Data Generator tailored for Oman Grade 3 Curriculum
+        function generateQuestionsForStage(stage) {
+            currentStageId = stage;
+            currentQuestionIndex = 0;
+
+            if (stage === 1) {
+                // Stage 1: Nizwa Fort - Place value & Numbers up to 1000
+                stageQuestions = [
+                    {
+                        prompt: "ما هي القيمة المكانية للرقم <span class='text-amber-400 font-black'>5</span> في العدد <span class='text-emerald-400 font-black'>754</span>؟",
+                        visual: "<div class='text-2xl font-black text-amber-300 bg-slate-800 px-6 py-3 rounded-2xl border border-amber-500/30'>العدد: 754</div>",
+                        options: ["آحاد (5)", "عشرات (50)", "مئات (500)", "ألوف (5000)"],
+                        correct: 1
+                    },
+                    {
+                        prompt: "اكتب العدد المكون من: 3 مئات + 8 عشرات + 2 آحاد:",
+                        visual: "<div class='flex gap-2 text-center font-extrabold'><span class='p-3 bg-amber-500/20 text-amber-300 rounded-xl'>3 مئات</span><span class='p-3 bg-emerald-500/20 text-emerald-300 rounded-xl'>8 عشرات</span><span class='p-3 bg-rose-500/20 text-rose-300 rounded-xl'>2 آحاد</span></div>",
+                        options: ["382", "283", "832", "328"],
+                        correct: 0
+                    },
+                    {
+                        prompt: "أيّ الأعداد التالية أكبر من <span class='text-amber-300'>640</span>؟",
+                        visual: "<div class='text-4xl'>🏰</div>",
+                        options: ["604", "639", "648", "599"],
+                        correct: 2
+                    },
+                    {
+                        prompt: "قرب العدد <span class='text-emerald-300'>47</span> لأقرب عشرة:",
+                        visual: "<div class='text-xl font-bold text-slate-300'>خَطُّ الأَعْدَادِ: 40 ← 47 → 50</div>",
+                        options: ["40", "45", "50", "60"],
+                        correct: 2
+                    },
+                    {
+                        prompt: "العدد التالي مباشرة في النمط: 200 ، 300 ، 400 ، .... هو:",
+                        visual: "<div class='text-2xl font-extrabold text-amber-300 animate-pulse'>200 ، 300 ، 400 ، ❓</div>",
+                        options: ["450", "500", "600", "410"],
+                        correct: 1
+                    }
+                ];
+            } else if (stage === 2) {
+                // Stage 2: Matrah Port - Multiplication & Division Fact Family
+                stageQuestions = [
+                    {
+                        prompt: "كم شراعاً في 4 سفن عمانية إذا كان لكل سفينة 3 أشرعة؟ (4 × 3)",
+                        visual: "<div class='text-4xl space-x-2 space-x-reverse'>⛵ ⛵ ⛵ ⛵</div>",
+                        options: ["7 أشرعة", "12 شراعاً", "10 أشرعة", "15 شراعاً"],
+                        correct: 1
+                    },
+                    {
+                        prompt: "ما حاصل ضرب: <span class='text-emerald-300'>5 × 6</span> ؟",
+                        visual: "<div class='text-3xl font-black text-emerald-400'>5 × 6 = ؟</div>",
+                        options: ["25", "30", "35", "20"],
+                        correct: 1
+                    },
+                    {
+                        prompt: "وزع بائع 20 خنجراً على 4 صناديق بالتساوي، كم خنجراً في كل صندوق؟ (20 ÷ 4)",
+                        visual: "<div class='text-2xl font-bold text-amber-300'>20 ÷ 4 = ؟</div>",
+                        options: ["4", "5", "6", "10"],
+                        correct: 1
+                    },
+                    {
+                        prompt: "أيّ الجمل التالية تعبر عن حقيقة الضرب الصحيحة؟",
+                        visual: "<div class='text-4xl'>🌊 ⛵ 🌊</div>",
+                        options: ["2 × 8 = 16", "2 × 8 = 14", "2 × 8 = 18", "2 × 8 = 12"],
+                        correct: 0
+                    },
+                    {
+                        prompt: "حاصل قسمة: <span class='text-amber-300'>30 ÷ 10</span> يساوي:",
+                        visual: "<div class='text-3xl font-extrabold text-teal-300'>30 ÷ 10 = ؟</div>",
+                        options: ["3", "10", "300", "5"],
+                        correct: 0
+                    }
+                ];
+            } else if (stage === 3) {
+                // Stage 3 redirected to custom Souq Interactive Screen
+                showScreen('souq');
+                initSouqGame();
+                return;
+            } else if (stage === 4) {
+                // Stage 4: Sahwa Clock Tower - Time Reading
+                stageQuestions = [
+                    {
+                        prompt: "الساعة تشير إلى العقرب الصغير على 3 والكبير على 12، كم الوقت؟",
+                        visual: "<div class='w-28 h-28 rounded-full border-4 border-amber-400 bg-slate-950 flex items-center justify-center font-black text-2xl text-amber-300 shadow-inner'>03:00</div>",
+                        options: ["الثالثة تماماً", "الثانية والنصف", "الرابعة تماماً", "الثالثة والنصف"],
+                        correct: 0
+                    },
+                    {
+                        prompt: "كم دقيقة في الساعة الكاملة؟",
+                        visual: "<div class='text-4xl'>🕰️</div>",
+                        options: ["30 دقيقة", "60 دقيقة", "100 دقيقة", "45 دقيقة"],
+                        correct: 1
+                    },
+                    {
+                        prompt: "إذا كانت الساعة تشير إلى 05:30 ، فهذا يعني:",
+                        visual: "<div class='w-28 h-28 rounded-full border-4 border-emerald-400 bg-slate-950 flex items-center justify-center font-black text-2xl text-emerald-300 shadow-inner'>05:30</div>",
+                        options: ["الخامسة وربع", "الخامسة والنصف", "السادسة تماماً", "الخامسة إلا ثلث"],
+                        correct: 1
+                    },
+                    {
+                        prompt: "نصف الساعة يساوي كم دقيقة؟",
+                        visual: "<div class='text-3xl font-extrabold text-amber-300'>½ ساعة = ؟ دقيقة</div>",
+                        options: ["15 دقيقة", "20 دقيقة", "30 دقيقة", "40 دقيقة"],
+                        correct: 2
+                    },
+                    {
+                        prompt: "انطلقت الحافلة الساعة 8:00 ووصلت نزوى الساعة 10:00، كم استغرقت الرحلة؟",
+                        visual: "<div class='text-2xl font-bold text-teal-300'>من 8:00 🚌 إلى 10:00</div>",
+                        options: ["ساعة واحدة", "ساعتان (2 ساعة)", "3 ساعات", "30 دقيقة"],
+                        correct: 1
+                    }
+                ];
+            } else if (stage === 5) {
+                // Stage 5: Bahla Oasis - Geometry & Fractions
+                stageQuestions = [
+                    {
+                        prompt: "ما اسم الشكل الهندسي ثلاثي الأبعاد الذي يشبه العلبة أو مكعب الثلج؟",
+                        visual: "<div class='text-5xl'>🧊</div>",
+                        options: ["مكعب", "كرة", "أسطوانة", "مخروط"],
+                        correct: 0
+                    },
+                    {
+                        prompt: "ما هو الكسر الذي يعبر عن الجزء المظلل (1 من 2)؟",
+                        visual: "<div class='flex gap-1 justify-center'><div class='w-12 h-12 bg-amber-400 rounded-l-lg'></div><div class='w-12 h-12 bg-slate-700 rounded-r-lg border-2 border-amber-400'></div></div>",
+                        options: ["نصف (½)", "ربع (¼)", "ثلث (⅓)", "ثلاثة أرباع (¾)"],
+                        correct: 0
+                    },
+                    {
+                        prompt: "كم ضلعاً للمربع؟",
+                        visual: "<div class='w-16 h-16 border-4 border-emerald-400 mx-auto rounded-md'></div>",
+                        options: ["3 أضلاع", "4 أضلاع متساوية", "5 أضلاع", "لا يوجد أضلاع"],
+                        correct: 1
+                    },
+                    {
+                        prompt: "ما هو الكسر الذي يمثل ربع الريال العماني؟",
+                        visual: "<div class='text-2xl font-black text-amber-300'>250 بيسة = .... الريال</div>",
+                        options: ["نصف الريال", "ربع الريال (¼)", "ريال كامل", "ثلث الريال"],
+                        correct: 1
+                    },
+                    {
+                        prompt: "الشكل الهندسية الذي ليس له أضلاع ولا رؤوس هو:",
+                        visual: "<div class='w-16 h-16 bg-rose-500 rounded-full mx-auto'></div>",
+                        options: ["المثلث", "المستطيل", "الدائرة", "المربع"],
+                        correct: 2
+                    }
+                ];
+            }
+
+            document.getElementById('game-stage-title').innerText = getStageTitle(stage);
+            showScreen('gameplay');
+            renderQuestion();
+        }
+
+        function getStageTitle(stage) {
+            const titles = {
+                1: "🏰 قلعة نزوى - القيمة المكانية",
+                2: "⛵ ميناء مطرح - الضرب والقسمة",
+                3: "🏪 دكان السوق العماني",
+                4: "🕰️ برج الصحوة - قراءة الساعة",
+                5: "🔷 واحة بهلاء - الأشكال والكسور"
+            };
+            return titles[stage] || "المحطة التعليمية";
+        }
+
+        function renderQuestion() {
+            const q = stageQuestions[currentQuestionIndex];
+            document.getElementById('game-progress-text').innerText = `السؤال ${currentQuestionIndex + 1} من ${stageQuestions.length}`;
+            document.getElementById('question-prompt').innerHTML = q.prompt;
+            document.getElementById('question-visual-box').innerHTML = q.visual;
+
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = '';
+
+            const banner = document.getElementById('feedback-banner');
+            banner.classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-amber-400 font-extrabold text-lg text-white text-center transition transform hover:scale-102 active:scale-95 shadow-md";
+                btn.innerHTML = opt;
+                btn.onclick = () => checkAnswer(idx, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIdx, btnElement) {
+            const q = stageQuestions[currentQuestionIndex];
+            const allBtns = document.querySelectorAll('#options-grid button');
+            allBtns.forEach(b => b.disabled = true);
+
+            const banner = document.getElementById('feedback-banner');
+            banner.classList.remove('hidden');
+
+            if (selectedIdx === q.correct) {
+                playSound('correct');
+                btnElement.classList.remove('bg-slate-800', 'border-slate-700');
+                btnElement.classList.add('bg-emerald-600', 'border-emerald-400', 'text-white', 'scale-105');
+                
+                banner.className = "mt-6 p-4 rounded-2xl text-center font-black text-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 animate-bounce";
+                banner.innerHTML = "✨ إجابة صحيحة ممتازة! أحسنت يا بطل! (+1 نجمة و +10 بيسات) 🌟";
+
+                gameState.stars += 1;
+                gameState.baisa += 10;
+                playSound('coin');
+                updateStatsUI();
+                saveProgress();
+
+                // Confetti mini burst
+                confetti({
+                    particleCount: 30,
+                    spread: 60,
+                    origin: { y: 0.7 }
+                });
+            } else {
+                playSound('wrong');
+                btnElement.classList.remove('bg-slate-800', 'border-slate-700');
+                btnElement.classList.add('bg-rose-600', 'border-rose-400', 'text-white');
+
+                // Highlight correct one
+                allBtns[q.correct].classList.add('bg-emerald-600/70', 'border-emerald-400');
+
+                banner.className = "mt-6 p-4 rounded-2xl text-center font-black text-lg bg-rose-500/20 border border-rose-500/40 text-rose-300";
+                banner.innerHTML = "💡 إجابة قريبة! حاول التركيز في السؤال التالي.";
+            }
+
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            playSound('click');
+            currentQuestionIndex++;
+            if (currentQuestionIndex < stageQuestions.length) {
+                renderQuestion();
+            } else {
+                // Complete Stage
+                if (!gameState.completedStages.includes(currentStageId)) {
+                    gameState.completedStages.push(currentStageId);
+                    gameState.baisa += 50; // Completion bonus
+                }
+                saveProgress();
+                
+                confetti({
+                    particleCount: 100,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+
+                alert(`🎉 تهانينا! أكملت ${getStageTitle(currentStageId)} بنجاح وحصلت على مكافأة مرحلة!`);
+                showScreen('map');
+            }
+        }
+
+        // Omani Souq Mini-game Logic
+        let souqCart = [];
+        let souqTargetGoal = 1000;
+
+        function initSouqGame() {
+            souqCart = [];
+            souqTargetGoal = 1000; // 1 Omani Rial
+            document.getElementById('souq-instruction').innerHTML = `🎯 التحدي: اجمع مشتريات عمانية بقيمة <span class="text-amber-300 font-black">1000 بيسة (1 ريال عماني)</span> تماماً!`;
+            document.getElementById('souq-wallet-balance').innerText = `${gameState.baisa} بيسة`;
+            renderSouqCart();
+        }
+
+        function addSouqItem(name, price) {
+            playSound('click');
+            souqCart.push({ name, price });
+            renderSouqCart();
+        }
+
+        function clearSouqCart() {
+            playSound('click');
+            souqCart = [];
+            renderSouqCart();
+        }
+
+        function renderSouqCart() {
+            const container = document.getElementById('souq-cart-items');
+            if (souqCart.length === 0) {
+                container.innerHTML = `<span class="text-slate-500 text-xs p-2">اضغط على المنتجات العمانية لإضافتها هنا...</span>`;
+                document.getElementById('souq-cart-total').innerText = `0 بيسة`;
+                return;
+            }
+
+            container.innerHTML = '';
+            let total = 0;
+            souqCart.forEach((item, i) => {
+                total += item.price;
+                const chip = document.createElement('span');
+                chip.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-200 text-xs font-bold";
+                chip.innerHTML = `${item.name} (${item.price} بيسة)`;
+                container.appendChild(chip);
+            });
+
+            document.getElementById('souq-cart-total').innerText = `${total} بيسة (${(total/1000).toFixed(3)} ريال)`;
+        }
+
+        function checkSouqPayment() {
+            const total = souqCart.reduce((sum, item) => sum + item.price, 0);
+            if (total === 1000) {
+                playSound('correct');
+                playSound('coin');
+                gameState.stars += 3;
+                gameState.baisa += 100;
+                saveProgress();
+
+                confetti({
+                    particleCount: 120,
+                    spread: 90,
+                    origin: { y: 0.5 }
+                });
+
+                alert("🎉 ممتاز جداً! قمت بحساب المشتريات بدقة وتطابق المبلغ 1000 بيسة (1 ريال عماني)! حصلت على +3 نجوم و +100 بيسة!");
+                showScreen('map');
+            } else if (total < 1000) {
+                playSound('wrong');
+                alert(`المجموع الحالي ${total} بيسة، يتبقى لديك ${1000 - total} بيسة لتصل إلى 1 ريال (1000 بيسة)! أضف منتجات أخرى.`);
+            } else {
+                playSound('wrong');
+                alert(`المجموع الحالي ${total} بيسة وهو أكبر من 1000 بيسة! حاول تفريغ السلة وتجميع المجموع بدقة.`);
+            }
+        }
+
+        // Speed Challenge Mode (60 seconds)
+        function startSpeedChallenge() {
+            showScreen('speed');
+            speedTimeLeft = 60;
+            speedScore = 0;
+            document.getElementById('speed-score').innerText = speedScore;
+            document.getElementById('speed-timer').innerText = speedTimeLeft;
+
+            if (speedTimerInterval) clearInterval(speedTimerInterval);
+
+            speedTimerInterval = setInterval(() => {
+                speedTimeLeft--;
+                document.getElementById('speed-timer').innerText = speedTimeLeft;
+                if (speedTimeLeft <= 0) {
+                    clearInterval(speedTimerInterval);
+                    playSound('fanfare');
+                    gameState.stars += Math.floor(speedScore / 2);
+                    gameState.baisa += speedScore * 5;
+                    saveProgress();
+                    alert(`⏱️ انتهى الوقت! أحرزت ${speedScore} نقاط وحصلت على نجوم وبيسات إضافية!`);
+                    showScreen('map');
+                }
+            }, 1000);
+
+            nextSpeedQuestion();
+        }
+
+        function nextSpeedQuestion() {
+            const a = Math.floor(Math.random() * 9) + 2;
+            const b = Math.floor(Math.random() * 9) + 1;
+            const correct = a * b;
+
+            document.getElementById('speed-question').innerText = `${a} × ${b} = ؟`;
+
+            const options = [correct, correct + 2, Math.max(1, correct - 3), correct + 5];
+            options.sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById('speed-options');
+            container.innerHTML = '';
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "py-4 px-6 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-amber-400 font-black text-2xl text-white hover:bg-slate-700 active:scale-95 transition";
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    if (opt === correct) {
+                        playSound('correct');
+                        speedScore++;
+                        document.getElementById('speed-score').innerText = speedScore;
+                    } else {
+                        playSound('wrong');
+                    }
+                    nextSpeedQuestion();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function showCertificate() {
+            document.getElementById('cert-student-name').innerText = gameState.playerName;
+            document.getElementById('cert-stars').innerText = `★ ${gameState.stars}`;
+            document.getElementById('cert-baisa').innerText = `${gameState.baisa} بيسة`;
+            
+            const now = new Date();
+            document.getElementById('cert-date').innerText = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
+            
+            showScreen('certificate');
+            
+            confetti({
+                particleCount: 150,
+                spread: 100,
+                origin: { y: 0.4 }
+            });
+        }
+
+        function openStage(stageNum) {
+            generateQuestionsForStage(stageNum);
+        }
+
+        function saveProgress() {
+            try {
+                localStorage.setItem('omani_math_game', JSON.stringify(gameState));
+            } catch(e) {
+                console.log("LocalStorage save error", e);
+            }
+        }
+
+        function loadProgress() {
+            try {
+                const data = localStorage.getItem('omani_math_game');
+                if (data) {
+                    gameState = { ...gameState, ...JSON.parse(data) };
+                }
+            } catch(e) {
+                console.log("LocalStorage load error", e);
+            }
+        }
+
+        function confirmReset() {
+            if (confirm("هل تريد إعادة بدء اللعبة وتصفير النجوم والمراحل؟")) {
+                gameState = {
+                    playerName: "البطل الصغير",
+                    character: "boy",
+                    stars: 0,
+                    baisa: 0,
+                    completedStages: [],
+                    soundEnabled: true
+                };
+                saveProgress();
+                showScreen('welcome');
+            }
+        }
+
+        // Initialize App on window load
+        window.onload = function() {
+            loadProgress();
+            updateStatsUI();
+        };
+    </script>
+</body>
+</html>
